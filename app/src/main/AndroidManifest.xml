@@ -10,6 +10,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".DrawerMenu"
+            android:label="@string/title_activity_drawer_menu"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
             android:name=".NoteListActivity"
             android:label="@string/title_activity_note_list"
             android:theme="@style/AppTheme">

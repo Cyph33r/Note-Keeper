@@ -31,6 +31,7 @@
 
     <string name="home_second">Home Second</string>
     <string name="note_icon_description">Note Icon</string>
+    <string name="title_activity_drawer_menu">DrawerMenu</string>
 
 
 </resources>
