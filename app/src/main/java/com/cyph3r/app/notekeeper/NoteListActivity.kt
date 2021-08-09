@@ -15,7 +15,7 @@ class NoteListActivity : AppCompatActivity() {
 //        setSupportActionBar(toolbar_list_note)
 
         add_note_button.setOnClickListener { _ ->
-            val activityIntent = Intent(this, EditNoteActivity::class.java)
+            val activityIntent = Intent(this, DrawerMenu::class.java)
             activityIntent.putExtra(NOTE_POSITION, EXTRA_NO_NOTE_POSITION)
             startActivity(activityIntent)
         }
@@ -27,7 +27,7 @@ class NoteListActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        list_item.adapter?.notifyDataSetChanged()
+        list_item.adapter.notifyDataSetChanged()
     }
 
 
