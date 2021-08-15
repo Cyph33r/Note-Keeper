@@ -34,6 +34,14 @@
     <string name="title_activity_drawer_menu">DrawerMenu</string>
     <string name="title_activity_uiu">uiu</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="navigation_header_background_descrip">Navigation Header Background Image</string>
+    <string name="nav_notes">Notes</string>
+    <string name="nav_courses">Courses</string>
+    <string name="nav_communicate">Communicate</string>
+    <string name="nav_share">Share</string>
+    <string name="nav_send">Send</string>
+    <string name="open_drawer">Opening Drawer</string>
+    <string name="close_drawer">Closing Drawer</string>
 
 
 </resources>
