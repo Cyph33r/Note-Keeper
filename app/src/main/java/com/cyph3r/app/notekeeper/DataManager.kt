@@ -1,5 +1,7 @@
 package com.cyph3r.app.notekeeper
 
+import com.cyph3r.app.notekeeper.DataManager.notes
+
 object DataManager {
     val courses = HashMap<String, CourseInfo>()
     val notes = ArrayList<NoteInfo>()
@@ -11,8 +13,11 @@ object DataManager {
 
         initializeNote()
     }
+
     private fun initializeNote() {
-        notes.add(NoteInfo(courses.values.first(), "This my story", "This my song" ))
+        for (i in (courses.values))
+            for (j in 1..3)
+                notes.add(NoteInfo(i, "This my story $j", "This my song $i"))
     }
 
     fun addNote(course: CourseInfo, noteTitle: String, noteText: String): Int {
@@ -20,6 +25,15 @@ object DataManager {
         notes.add(note)
 
         return notes.lastIndex
+    }
+
+    fun getNotesUnderCourse(course: CourseInfo): List<NoteInfo> {
+        val toReturn = mutableListOf<NoteInfo>()
+        for (note in notes)
+            if (note.course == course)
+                toReturn.add(note)
+
+        return toReturn.toList()
     }
 
     private fun initializeCourses() {

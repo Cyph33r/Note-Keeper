@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Note Keeper</string>
+    <string name="edit_note_activity">Editi Notu</string>
+    <string name="action_settings">Settingssi</string>
+    <string name="previous">Ehin</string>
+    <string name="next">Tesiwaju</string>
+    <string name="menu_home">Ile</string>
+    <string name="nav_notes">Awon Notu</string>
+    <string name="nav_courses">Awon Course</string>
+</resources>

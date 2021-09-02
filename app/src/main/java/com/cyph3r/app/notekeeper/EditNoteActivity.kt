@@ -6,25 +6,25 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_edit_note.*
+import com.cyph3r.app.notekeeper.databinding.ActivityEditNoteBinding
 
 
 private var position = EXTRA_NO_NOTE_POSITION
 
 class EditNoteActivity : AppCompatActivity() {
     private var logTag = this::class.simpleName
-
+    lateinit var activityEditNoteBinding: ActivityEditNoteBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_edit_note)
-//        setSupportActionBar(toolbar_edit_note)
+        activityEditNoteBinding = ActivityEditNoteBinding.inflate(layoutInflater)
+        setContentView(activityEditNoteBinding.root)
         val adapterCourses = ArrayAdapter<CourseInfo>(
             this,
             android.R.layout.simple_spinner_item,
             DataManager.courses.values.toList()
         )
         adapterCourses.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinner_courses.adapter = adapterCourses
+        activityEditNoteBinding.spinnerCourses.adapter = adapterCourses
 
 
         position = savedInstanceState?.getInt(NOTE_POSITION) ?: intent.getIntExtra(
@@ -38,21 +38,22 @@ class EditNoteActivity : AppCompatActivity() {
             position = DataManager.notes.lastIndex
         }
 
-        Log.i(logTag, "$logTag has been created")
+        Log.d(logTag, "$logTag has been created")
 
     }
 
     override fun onPause() {
         super.onPause()
+        Log.d(logTag, "$logTag has been paused")
         saveNote()
 
     }
 
     private fun saveNote() {
         val selectedNote = DataManager.notes[position]
-        selectedNote.title = field_note_title.text.trim().toString()
-        selectedNote.text = field_note_text.text.toString().trim()
-        selectedNote.course = spinner_courses.selectedItem as CourseInfo
+        selectedNote.title = activityEditNoteBinding.fieldNoteTitle.text.trim().toString()
+        selectedNote.text = activityEditNoteBinding.fieldNoteText.text.toString().trim()
+        selectedNote.course = activityEditNoteBinding.spinnerCourses.selectedItem as CourseInfo
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -63,9 +64,13 @@ class EditNoteActivity : AppCompatActivity() {
 
     private fun displayNote() {
         val selectedNote = DataManager.notes[position]
-        field_note_title.setText(selectedNote.title)
-        field_note_text.setText(selectedNote.text)
-        spinner_courses.setSelection(DataManager.courses.values.indexOf(selectedNote.course), true)
+        activityEditNoteBinding.fieldNoteTitle.setText(selectedNote.title)
+        activityEditNoteBinding.fieldNoteText.setText(selectedNote.text)
+        activityEditNoteBinding.spinnerCourses.setSelection(
+            DataManager.courses.values.indexOf(
+                selectedNote.course
+            ), true
+        )
         invalidateOptionsMenu()
 
     }
@@ -73,26 +78,23 @@ class EditNoteActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
-        var menuitem: MenuItem?
+        var menuItem: MenuItem?
         if (position >= DataManager.notes.size - 1 || position < 0) {
-            menuitem = menu?.findItem(R.id.action_next)
-            menuitem?.isEnabled = false
-            menuitem?.setIcon(R.drawable.ic_arrow_forward_grey_24dp)
+            menuItem = menu?.findItem(R.id.action_next)
+            menuItem?.isEnabled = false
+            menuItem?.setIcon(R.drawable.ic_arrow_forward_grey_24dp)
         }
         if (position <= 0) {
-            menuitem = menu?.findItem(R.id.action_back)
-            menuitem?.isEnabled = false
-            menuitem?.setIcon(R.drawable.ic_arrow_back_grey_24dp)
+            menuItem = menu?.findItem(R.id.action_back)
+            menuItem?.isEnabled = false
+            menuItem?.setIcon(R.drawable.ic_arrow_back_grey_24dp)
         }
         return true
     }
 
     override fun onDestroy() {
+        Log.d(logTag, "$logTag has been destroyed")
         super.onDestroy()
-    }
-
-    override fun invalidateOptionsMenu() {
-        super.invalidateOptionsMenu()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
