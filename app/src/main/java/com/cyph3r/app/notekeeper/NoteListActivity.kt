@@ -10,17 +10,14 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.cyph3r.app.notekeeper.databinding.ActivityListNoteBinding
 import com.cyph3r.app.notekeeper.databinding.DrawerBinding
 import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
 import com.google.android.material.snackbar.Snackbar
 
 
 class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
-
-
-    private lateinit var activityListNoteBinding: ActivityListNoteBinding
-    private lateinit var drawerBinding: DrawerBinding
+    private var _drawerBinding: DrawerBinding? = null
+    private val drawerBinding: DrawerBinding get() = _drawerBinding!!
     private val viewModel: ListNoteActivityViewModel by viewModels()
     private var logTag = this::class.simpleName
     private val noteRecyclerAdapter by lazy { NoteRecyclerAdapter(this, DataManager.notes) }
@@ -33,37 +30,34 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     private lateinit var db: DatabaseHelper
     private val noteLayout by lazy { LinearLayoutManager(this) }
     private val courseLayout by lazy { LinearLayoutManager(this) }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        drawerBinding = DrawerBinding.inflate(layoutInflater)
-        activityListNoteBinding = ActivityListNoteBinding.inflate(layoutInflater)
+        _drawerBinding = DrawerBinding.inflate(layoutInflater)
         setContentView(drawerBinding.root)
-        setSupportActionBar(activityListNoteBinding.toolbarNotesList)
+        setSupportActionBar(drawerBinding.activityListNoteRoot.toolbarNotesList)
         Log.d(logTag, "$logTag has been created")
         if (viewModel.isStarted && savedInstanceState != null) {
             viewModel.restoreState(savedInstanceState)
         }
-        db = DatabaseHelper(this)
-        val portal = db.writableDatabase
-        val toInsert = ContentValues()
-        toInsert.put(NoteKeeperDBContract.NoteEntry.COLUMN_DATE_CREATED, "today")
-        toInsert.put(NoteKeeperDBContract.NoteEntry.COLUMN_NOTE_BODY, "Hi there")
-        toInsert.put(NoteKeeperDBContract.NoteEntry.COLUMN_NOTE_COURSE, 3)
-        toInsert.put(NoteKeeperDBContract.NoteEntry.COLUMN_NOTE_TITLE, "fkghf")
-        portal.insert(NoteKeeperDBContract.NoteEntry.TABLE_NAME, null, toInsert)
         viewModel.isStarted = false
-        activityListNoteBinding.addNoteButton.setOnClickListener { _ ->
+        drawerBinding.activityListNoteRoot.addNoteButton.setOnClickListener {
             val activityIntent = Intent(this, EditNoteActivity::class.java)
             activityIntent.putExtra(NOTE_POSITION, EXTRA_NO_NOTE_POSITION)
             startActivity(activityIntent)
         }
-
+        db = DatabaseHelper(this)
+        val df = db.writableDatabase
+        val record = ContentValues()
+        record.put(NoteKeeperDBContract.NoteEntry.COLUMN_NOTE_TITLE,"ghh")
+        record.put(NoteKeeperDBContract.NoteEntry.COLUMN_NOTE_COURSE,4)
+        record.put(NoteKeeperDBContract.NoteEntry.COLUMN_NOTE_BODY,"gyghlihh")
+        record.put(NoteKeeperDBContract.NoteEntry.COLUMN_DATE_CREATED,1999)
+        df.insert(NoteKeeperDBContract.NoteEntry.TABLE_NAME,null,record)
         handleItemSelection(viewModel.navDrawerSelection)
         val toggle = ActionBarDrawerToggle(
             this,
             drawerBinding.activityMainDrawer,
-            activityListNoteBinding.toolbarNotesList,
+            drawerBinding.activityListNoteRoot.toolbarNotesList,
             R.string.open_drawer,
             R.string.close_drawer
         )
@@ -74,14 +68,14 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
 
     private fun displayNotes() {
-        activityListNoteBinding.noteCourseList.layoutManager = noteLayout
-        activityListNoteBinding.noteCourseList.adapter = noteRecyclerAdapter
+        drawerBinding.activityListNoteRoot.noteCourseList.layoutManager = noteLayout
+        drawerBinding.activityListNoteRoot.noteCourseList.adapter = noteRecyclerAdapter
         drawerBinding.navView.menu.findItem(R.id.nav_notes).isChecked = true
     }
 
     private fun displayCourses() {
-        activityListNoteBinding.noteCourseList.layoutManager = courseLayout
-        activityListNoteBinding.noteCourseList.adapter = courseRecyclerAdapter
+        drawerBinding.activityListNoteRoot.noteCourseList.layoutManager = courseLayout
+        drawerBinding.activityListNoteRoot.noteCourseList.adapter = courseRecyclerAdapter
         drawerBinding.navView.menu.findItem(R.id.nav_courses).isChecked = true
     }
 
@@ -98,8 +92,9 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     }
 
     fun displayNotesByCourse(course: CourseInfo) {
-        activityListNoteBinding.noteCourseList.layoutManager = noteLayout
-        activityListNoteBinding.noteCourseList.adapter = NotesUnderCourseAdapter(this, course)
+        drawerBinding.activityListNoteRoot.noteCourseList.layoutManager = noteLayout
+        drawerBinding.activityListNoteRoot.noteCourseList.adapter =
+            NotesUnderCourseAdapter(this, course)
     }
 
     override fun onBackPressed() {
@@ -113,7 +108,7 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     override fun onResume() {
         super.onResume()
         Log.d(logTag, "$logTag has resumed")
-        activityListNoteBinding.noteCourseList.adapter?.notifyDataSetChanged()
+        drawerBinding.activityListNoteRoot.noteCourseList.adapter?.notifyDataSetChanged()
     }
 
     override fun onRestart() {
@@ -122,13 +117,14 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     }
 
     override fun onStop() {
-        super.onStop()
         Log.d(logTag, "$logTag has been stopped")
+        super.onStop()
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        _drawerBinding = null
         Log.d(logTag, "$logTag has been destroyed")
+        super.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -156,8 +152,12 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
     }
 
-    private fun showMessage(message: String) {
-        Snackbar.make(activityListNoteBinding.noteCourseList, message, Snackbar.LENGTH_SHORT).show()
+    fun showMessage(message: String) {
+        Snackbar.make(
+            drawerBinding.activityListNoteRoot.addNoteButton,
+            message,
+            Snackbar.LENGTH_SHORT
+        ).show()
     }
 
 

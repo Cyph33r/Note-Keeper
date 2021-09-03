@@ -35,6 +35,7 @@
     <string name="open_drawer" translatable="false">Opening Drawer</string>
     <string name="close_drawer" translatable="false">Closing Drawer</string>
     <string name="item_course_title" translatable="false">Course Name</string>
+    <string name="note_date">Date Created</string>
 
 
 </resources>
