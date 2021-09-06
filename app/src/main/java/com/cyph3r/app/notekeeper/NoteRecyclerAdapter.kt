@@ -46,7 +46,7 @@ class NoteRecyclerAdapter(
         holder.noteTitle?.text = note.course?.title
         holder.noteText?.text = if (note.title.isNullOrBlank()) "<Unnamed>" else note.title
         holder.dateCreated?.text =
-            SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.US).format(Date(note.dateCreated))
+            SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.US).format(Date(note.dateCreated))+" $position"
         holder.notePosition = position.toLong()
         /* if (position in 0..2)
              Log.d(tag, "Position is $position")*/
@@ -61,7 +61,7 @@ class NoteRecyclerAdapter(
         init {
             itemView.setOnClickListener {
                 val intent = Intent(context, EditNoteActivity::class.java)
-                intent.putExtra(NOTE_POSITION, notePosition + 1)
+                intent.putExtra(NOTE_POSITION, notePosition - 1)
                 context.startActivity(intent)
 
             }

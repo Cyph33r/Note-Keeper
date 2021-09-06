@@ -60,7 +60,7 @@ class NotesUnderCourseAdapter(
                 val intent = Intent(context, EditNoteActivity::class.java)
                 intent.putExtra(
                     NOTE_POSITION,
-                    DataManager.notes.indexOf(notesUnderCourse[this.notePosition])
+                    DataManager.notes.indexOf(notesUnderCourse[this.notePosition]).toLong()
                 )
                 context.startActivity(intent)
             }

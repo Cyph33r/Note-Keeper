@@ -48,7 +48,7 @@ class EditNoteActivity : AppCompatActivity() {
     }
 
     private fun showMessage(toString: String) {
-        Toast.makeText(this,toString, Toast.LENGTH_LONG).show()
+        Toast.makeText(this, toString, Toast.LENGTH_LONG).show()
     }
 
     override fun onPause() {
@@ -73,7 +73,7 @@ class EditNoteActivity : AppCompatActivity() {
     }
 
     private fun displayNote() {
-        val selectedNote = DataManager.notes[position.toInt() - 1]
+        val selectedNote = DataManager.notes[position.toInt()]
         activityEditNoteBinding.fieldNoteTitle.setText(selectedNote.title)
         activityEditNoteBinding.fieldNoteText.setText(selectedNote.text)
         activityEditNoteBinding.spinnerCourses.setSelection(
