@@ -20,14 +20,19 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     private val drawerBinding: DrawerBinding get() = _drawerBinding!!
     private val viewModel: ListNoteActivityViewModel by viewModels()
     private var logTag = this::class.simpleName
-    private val noteRecyclerAdapter by lazy { NoteRecyclerAdapter(this, DataManager.notes) }
+    private val noteRecyclerAdapter by lazy {
+        NoteRecyclerAdapter(
+            this,
+            DataManager.notes,
+            lifecycle
+        )
+    }
     private val courseRecyclerAdapter by lazy {
         CourseRecyclerAdapter(
             this,
             DataManager.courses.values.toList()
         )
     }
-    private lateinit var db: DatabaseHelper
     private val noteLayout by lazy { LinearLayoutManager(this) }
     private val courseLayout by lazy { LinearLayoutManager(this) }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,14 +50,7 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
             activityIntent.putExtra(NOTE_POSITION, EXTRA_NO_NOTE_POSITION)
             startActivity(activityIntent)
         }
-        db = DatabaseHelper(this)
-        val df = db.writableDatabase
-        val record = ContentValues()
-        record.put(NoteKeeperDBContract.NoteEntry.COLUMN_NOTE_TITLE,"ghh")
-        record.put(NoteKeeperDBContract.NoteEntry.COLUMN_NOTE_COURSE,4)
-        record.put(NoteKeeperDBContract.NoteEntry.COLUMN_NOTE_BODY,"gyghlihh")
-        record.put(NoteKeeperDBContract.NoteEntry.COLUMN_DATE_CREATED,1999)
-        df.insert(NoteKeeperDBContract.NoteEntry.TABLE_NAME,null,record)
+        DataManager.database = DatabaseHelper(this)
         handleItemSelection(viewModel.navDrawerSelection)
         val toggle = ActionBarDrawerToggle(
             this,
@@ -94,7 +92,7 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     fun displayNotesByCourse(course: CourseInfo) {
         drawerBinding.activityListNoteRoot.noteCourseList.layoutManager = noteLayout
         drawerBinding.activityListNoteRoot.noteCourseList.adapter =
-            NotesUnderCourseAdapter(this, course)
+            NotesUnderCourseAdapter(this, lifecycle, course)
     }
 
     override fun onBackPressed() {

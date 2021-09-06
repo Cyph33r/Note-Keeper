@@ -6,20 +6,41 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import androidx.recyclerview.widget.RecyclerView
 
-class NotesUnderCourseAdapter(private val context: Context, private val course: CourseInfo) :
-    RecyclerView.Adapter<NotesUnderCourseAdapter.ViewHolder>() {
+class NotesUnderCourseAdapter(
+    private val context: Context,
+    lifecycle: Lifecycle,
+    private val course: CourseInfo
+) :
+    RecyclerView.Adapter<NotesUnderCourseAdapter.ViewHolder>(), LifecycleObserver {
+
+    private var notesUnderCourse: List<NoteInfo>
+
+    init {
+
+        notesUnderCourse = DataManager.getNotesUnderCourse(course)
+        lifecycle.addObserver(this)
+    }
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = inflater.inflate(R.layout.item_note_list, parent, false)
         return ViewHolder(view)
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private fun refreshView() {
+        notesUnderCourse  = DataManager.getNotesUnderCourse(course)
+
+    }
+
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val notesUnderCourse = DataManager.getNotesUnderCourse(course)
         val note = notesUnderCourse[position]
         holder.noteTitle?.text = note.course?.title
         holder.noteText?.text = if (note.title.isNullOrBlank()) "<Unnamed>" else note.title

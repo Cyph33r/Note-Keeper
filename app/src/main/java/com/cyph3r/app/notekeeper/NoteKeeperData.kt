@@ -10,6 +10,7 @@ data class CourseInfo(val courseId: String, var title: String) {
 data class NoteInfo(
     var course: CourseInfo? = null,
     var title: String? = null,
-    var text: String? = null
+    var text: String? = null,
+    var dateCreated: Long = System.currentTimeMillis()
 ) {
 }

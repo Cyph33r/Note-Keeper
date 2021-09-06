@@ -9,7 +9,7 @@ import org.junit.Before
 
 
 class DataManagerTest {
-    @Before
+ /*   @Before
     fun setUp() {
         println("performing test")
 
@@ -35,5 +35,5 @@ class DataManagerTest {
         assertEquals(noteText,note.text)
 
 
-    }
+    }*/
 }

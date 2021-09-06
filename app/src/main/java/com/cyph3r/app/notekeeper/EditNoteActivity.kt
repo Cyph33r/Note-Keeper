@@ -13,7 +13,7 @@ private var position = EXTRA_NO_NOTE_POSITION
 
 class EditNoteActivity : AppCompatActivity() {
     private var logTag = this::class.simpleName
-    lateinit var activityEditNoteBinding: ActivityEditNoteBinding
+    private lateinit var activityEditNoteBinding: ActivityEditNoteBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activityEditNoteBinding = ActivityEditNoteBinding.inflate(layoutInflater)
@@ -27,15 +27,18 @@ class EditNoteActivity : AppCompatActivity() {
         activityEditNoteBinding.spinnerCourses.adapter = adapterCourses
 
 
-        position = savedInstanceState?.getInt(NOTE_POSITION) ?: intent.getIntExtra(
+        position = savedInstanceState?.getLong(NOTE_POSITION) ?: intent.getLongExtra(
             NOTE_POSITION,
             EXTRA_NO_NOTE_POSITION
         )
         if (position != EXTRA_NO_NOTE_POSITION)
             displayNote()
         else {
-            DataManager.notes.add(NoteInfo())
-            position = DataManager.notes.lastIndex
+            position = DataManager.addNote(
+                activityEditNoteBinding.spinnerCourses.selectedItem as CourseInfo,
+                "",
+                ""
+            )
         }
 
         Log.d(logTag, "$logTag has been created")
@@ -50,20 +53,21 @@ class EditNoteActivity : AppCompatActivity() {
     }
 
     private fun saveNote() {
-        val selectedNote = DataManager.notes[position]
-        selectedNote.title = activityEditNoteBinding.fieldNoteTitle.text.trim().toString()
-        selectedNote.text = activityEditNoteBinding.fieldNoteText.text.toString().trim()
-        selectedNote.course = activityEditNoteBinding.spinnerCourses.selectedItem as CourseInfo
+        val noteTitle = activityEditNoteBinding.fieldNoteTitle.text.trim().toString()
+        val noteText = activityEditNoteBinding.fieldNoteText.text.toString().trim()
+        val noteCourse = activityEditNoteBinding.spinnerCourses.selectedItem as CourseInfo
+        val dateCreated = System.currentTimeMillis()
+        DataManager.updateNote(position, noteCourse, noteTitle, noteText, dateCreated)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(NOTE_POSITION, position)
+        outState.putLong(NOTE_POSITION, position)
         saveNote()
     }
 
     private fun displayNote() {
-        val selectedNote = DataManager.notes[position]
+        val selectedNote = DataManager.notes[position.toInt() - 1]
         activityEditNoteBinding.fieldNoteTitle.setText(selectedNote.title)
         activityEditNoteBinding.fieldNoteText.setText(selectedNote.text)
         activityEditNoteBinding.spinnerCourses.setSelection(
@@ -79,15 +83,17 @@ class EditNoteActivity : AppCompatActivity() {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         var menuItem: MenuItem?
-        if (position >= DataManager.notes.size - 1 || position < 0) {
+        if (position >= DataManager.notes.size  || position < 0) {
             menuItem = menu?.findItem(R.id.action_next)
+            menuItem?.isVisible = false
             menuItem?.isEnabled = false
-            menuItem?.setIcon(R.drawable.ic_arrow_forward_grey_24dp)
+//            menuItem?.setIcon(R.drawable.ic_arrow_forward_grey_24dp)
         }
-        if (position <= 0) {
+        if (position <= 1) {
             menuItem = menu?.findItem(R.id.action_back)
+            menuItem?.isVisible = false
             menuItem?.isEnabled = false
-            menuItem?.setIcon(R.drawable.ic_arrow_back_grey_24dp)
+//            menuItem?.setIcon(R.drawable.ic_arrow_back_grey_24dp)
         }
         return true
     }
@@ -98,9 +104,6 @@ class EditNoteActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.action_settings -> true
             R.id.action_next -> {
