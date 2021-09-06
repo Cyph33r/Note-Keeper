@@ -1,10 +1,12 @@
 package com.cyph3r.app.notekeeper
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cyph3r.app.notekeeper.databinding.ActivityEditNoteBinding
 
@@ -40,9 +42,13 @@ class EditNoteActivity : AppCompatActivity() {
                 ""
             )
         }
-
+        this.showMessage(position.toString())
         Log.d(logTag, "$logTag has been created")
 
+    }
+
+    private fun showMessage(toString: String) {
+        Toast.makeText(this,toString, Toast.LENGTH_LONG).show()
     }
 
     override fun onPause() {
@@ -83,7 +89,7 @@ class EditNoteActivity : AppCompatActivity() {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         var menuItem: MenuItem?
-        if (position >= DataManager.notes.size  || position < 0) {
+        if (position >= DataManager.notes.size || position < 0) {
             menuItem = menu?.findItem(R.id.action_next)
             menuItem?.isVisible = false
             menuItem?.isEnabled = false

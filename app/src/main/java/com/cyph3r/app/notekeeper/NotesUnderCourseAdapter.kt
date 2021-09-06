@@ -35,7 +35,7 @@ class NotesUnderCourseAdapter(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private fun refreshView() {
-        notesUnderCourse  = DataManager.getNotesUnderCourse(course)
+        notesUnderCourse = DataManager.getNotesUnderCourse(course)
 
     }
 
@@ -48,7 +48,7 @@ class NotesUnderCourseAdapter(
 
     }
 
-    override fun getItemCount() = DataManager.getNotesUnderCourse(course).size
+    override fun getItemCount() = notesUnderCourse.size
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val noteTitle: TextView? = itemView.findViewById(R.id.list_note_title)
@@ -60,7 +60,7 @@ class NotesUnderCourseAdapter(
                 val intent = Intent(context, EditNoteActivity::class.java)
                 intent.putExtra(
                     NOTE_POSITION,
-                    DataManager.notes.indexOf(DataManager.getNotesUnderCourse(course)[notePosition])
+                    DataManager.notes.indexOf(notesUnderCourse[this.notePosition])
                 )
                 context.startActivity(intent)
             }
