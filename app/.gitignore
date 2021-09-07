@@ -108,3 +108,4 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
+/src/test/java/com/cyph3r/app/notekeeper/RandomTests.kt

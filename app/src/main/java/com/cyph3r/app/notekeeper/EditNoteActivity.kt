@@ -62,7 +62,7 @@ class EditNoteActivity : AppCompatActivity() {
         val noteText = activityEditNoteBinding.fieldNoteText.text.toString().trim()
         val noteCourse = activityEditNoteBinding.spinnerCourses.selectedItem as CourseInfo
         val dateCreated = System.currentTimeMillis()
-        DataManager.updateNote(position, noteCourse, noteTitle, noteText, dateCreated)
+        DataManager.updateNote(position + 1, noteCourse, noteTitle, noteText, dateCreated)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

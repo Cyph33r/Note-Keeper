@@ -18,3 +18,6 @@
 /.idea/codeStyles/codeStyleConfig.xml
 /.idea/codeStyles/Project.xml
 /.idea/vcs.xml
+libs/
+src/main/res/navigation/
+src/main/res/values-v21/
