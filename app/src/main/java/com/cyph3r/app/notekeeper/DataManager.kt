@@ -82,7 +82,7 @@ object DataManager {
     }
 
     fun updateNote(
-        noteId: Long,
+        noteId: Long, //todo: update this
         course: CourseInfo? = null,
         noteTitle: String? = null,
         noteText: String? = null,
