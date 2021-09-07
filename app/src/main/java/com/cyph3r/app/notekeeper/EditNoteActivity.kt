@@ -11,9 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cyph3r.app.notekeeper.databinding.ActivityEditNoteBinding
 
 
-private var position = EXTRA_NO_NOTE_POSITION
-
 class EditNoteActivity : AppCompatActivity() {
+    private var position = EXTRA_NO_NOTE_POSITION
     private var logTag = this::class.simpleName
     private lateinit var activityEditNoteBinding: ActivityEditNoteBinding
     override fun onCreate(savedInstanceState: Bundle?) {
