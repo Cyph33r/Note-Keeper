@@ -77,7 +77,7 @@ object DataManager {
         record.put(NoteEntry.COLUMN_NOTE_COURSE, course.courseId)
         val toReturn = db.insert(NoteEntry.TABLE_NAME, null, record)
         db.close()
-        return toReturn
+        return toReturn - 1
 
     }
 
