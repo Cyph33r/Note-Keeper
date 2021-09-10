@@ -1,47 +1,61 @@
 package com.cyph3r.app.notekeeper
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.room.Room
+import com.cyph3r.app.notekeeper.database.*
 import com.cyph3r.app.notekeeper.databinding.ActivityEditNoteBinding
 
 
 class EditNoteActivity : AppCompatActivity() {
-    private var position = EXTRA_NO_NOTE_POSITION
+    private var noteId = EXTRA_NO_NOTE_ID
     private var logTag = this::class.simpleName
     private lateinit var activityEditNoteBinding: ActivityEditNoteBinding
+    private lateinit var database: AppDatabase
+    private lateinit var noteDao: NoteDao
+    private lateinit var courseDao: CourseDao
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activityEditNoteBinding = ActivityEditNoteBinding.inflate(layoutInflater)
         setContentView(activityEditNoteBinding.root)
-        val adapterCourses = ArrayAdapter<CourseInfo>(
+        database = Room.databaseBuilder(this, AppDatabase::class.java, "database.db")
+            .allowMainThreadQueries().build()
+        noteDao = database.noteDao()
+        courseDao = database.courseDao()
+        val adapterCourses = ArrayAdapter<Course>(
             this,
             android.R.layout.simple_spinner_item,
-            DataManager.courses.values.toList()
+            courseDao.getAllCourses()
         )
         adapterCourses.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         activityEditNoteBinding.spinnerCourses.adapter = adapterCourses
 
 
-        position = savedInstanceState?.getLong(NOTE_POSITION) ?: intent.getLongExtra(
-            NOTE_POSITION,
-            EXTRA_NO_NOTE_POSITION
+        noteId = savedInstanceState?.getLong(NOTE_ID) ?: intent.getLongExtra(
+            NOTE_ID,
+            EXTRA_NO_NOTE_ID
         )
-        if (position != EXTRA_NO_NOTE_POSITION)
+        if (noteId != EXTRA_NO_NOTE_ID)
             displayNote()
         else {
-            position = DataManager.addNote(
-                activityEditNoteBinding.spinnerCourses.selectedItem as CourseInfo,
-                "",
-                ""
+            noteId = noteDao.addNote(
+                NoteInsertEntry(
+                    "",
+                    "",
+//                    (activityEditNoteBinding.spinnerCourses.selectedItem as Course).courseId,
+                    (activityEditNoteBinding.spinnerCourses.adapter.getItem(0) as Course).courseId,
+                    System.currentTimeMillis()
+                )
             )
         }
-        this.showMessage(position.toString())
+        this.showMessage(noteId.toString())
         Log.d(logTag, "$logTag has been created")
 
     }
@@ -60,27 +74,36 @@ class EditNoteActivity : AppCompatActivity() {
     private fun saveNote() {
         val noteTitle = activityEditNoteBinding.fieldNoteTitle.text.trim().toString()
         val noteText = activityEditNoteBinding.fieldNoteText.text.toString().trim()
-        val noteCourse = activityEditNoteBinding.spinnerCourses.selectedItem as CourseInfo
-        val dateCreated = System.currentTimeMillis()
-        DataManager.updateNote(position + 1, noteCourse, noteTitle, noteText, dateCreated)
+        val noteCourse = activityEditNoteBinding.spinnerCourses.selectedItem as Course
+//        val dateCreated = System.currentTimeMillis()
+        noteDao.updateNote(NoteUpdateEntry(noteId, noteTitle, noteText, noteCourse.courseId))
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putLong(NOTE_POSITION, position)
+        outState.putLong(NOTE_ID, noteId)
         saveNote()
     }
 
     private fun displayNote() {
-        val selectedNote = DataManager.notes[position.toInt()]
-        activityEditNoteBinding.fieldNoteTitle.setText(selectedNote.title)
-        activityEditNoteBinding.fieldNoteText.setText(selectedNote.text)
+        val selectedNote = noteDao.getNoteById(noteId.toInt()).first()
+        val noteCourse = courseDao.findCourseById(selectedNote.noteCourseId)
+        activityEditNoteBinding.fieldNoteTitle.setText(selectedNote.noteTitle)
+        activityEditNoteBinding.fieldNoteText.setText(selectedNote.noteText)
         activityEditNoteBinding.spinnerCourses.setSelection(
-            DataManager.courses.values.indexOf(
-                selectedNote.course
-            ), true
+            retrieveSpinnerItems().indexOf(noteCourse), true
         )
         invalidateOptionsMenu()
+
+    }
+
+    private fun retrieveSpinnerItems(): List<Course> {
+        val adapter = activityEditNoteBinding.spinnerCourses.adapter
+        val count = adapter.count
+        val toReturn = ArrayList<Course>()
+        for (i in 0 until count)
+            toReturn.add(adapter.getItem(i) as Course)
+        return toReturn
 
     }
 
@@ -88,13 +111,13 @@ class EditNoteActivity : AppCompatActivity() {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         var menuItem: MenuItem?
-        if (position >= DataManager.notes.size || position < 0) {
+        if (noteId >= noteDao.getSize() || noteId < 0) {
             menuItem = menu?.findItem(R.id.action_next)
             menuItem?.isVisible = false
             menuItem?.isEnabled = false
 //            menuItem?.setIcon(R.drawable.ic_arrow_forward_grey_24dp)
         }
-        if (position <= 1) {
+        if (noteId <= 1) {
             menuItem = menu?.findItem(R.id.action_back)
             menuItem?.isVisible = false
             menuItem?.isEnabled = false
@@ -113,13 +136,13 @@ class EditNoteActivity : AppCompatActivity() {
             R.id.action_settings -> true
             R.id.action_next -> {
                 saveNote()
-                ++position
+                ++noteId
                 displayNote()
                 true
             }
             R.id.action_back -> {
                 saveNote()
-                --position
+                --noteId
                 displayNote()
                 true
             }
