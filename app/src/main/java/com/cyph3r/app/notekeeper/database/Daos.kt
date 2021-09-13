@@ -15,6 +15,9 @@ interface NoteDao {
     @Delete
     fun deleteNote(note: Note)
 
+    @Query("DELETE FROM notes WHERE NoteId = :noteId")
+    fun deleteNoteById(noteId: Int)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE, entity = Note::class)
     fun addNote(note: NoteInsertEntry): Long
 
@@ -34,14 +37,14 @@ interface CourseDao {
     @Query("SELECT * FROM courses")
     fun getAllCourses(): List<Course>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE, entity = Course::class)
     fun addCourse(course: Course)
 
     @Delete
     fun removeCourse(course: Course)
 
-    @Query("SELECT * FROM  courses WHERE courseId = :courseId")
-    fun findCourseById(courseId: String): Course
+    @Query("SELECT * FROM  courses WHERE courseID = :courseID")
+    fun findCourseById(courseID: String): Course
 
     @Query(" SELECT COUNT(*) FROM courses")
     fun getSize(): Int

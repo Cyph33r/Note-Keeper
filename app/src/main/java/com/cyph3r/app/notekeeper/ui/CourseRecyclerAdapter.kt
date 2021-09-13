@@ -39,7 +39,7 @@ class CourseRecyclerAdapter(private val context: Context) :
             itemView.setOnClickListener {
                 (context as NoteListActivity).displayNotesByCourse(
                     courseDao.findCourseById(
-                        courseDao.getAllCourses()[coursePosition].courseId
+                        courseDao.getAllCourses()[coursePosition].courseID
                     )
                 )
             }

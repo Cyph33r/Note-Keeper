@@ -9,4 +9,7 @@
     <string name="nav_notes">Awon Notu</string>
     <string name="nav_courses">Awon Course</string>
     <string name="note_date">Ojo to ko</string>
+    <string name="edit_course_dialog_title">Edit Course</string>
+    <string name="dialog_edit_course_id_hint">Course Id</string>
+    <string name="dialog_edit_course_name">Course Name</string>
 </resources>

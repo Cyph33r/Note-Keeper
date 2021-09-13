@@ -1,20 +1,29 @@
 package com.cyph3r.app.notekeeper
 
+import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.MenuItem
 import android.util.Log
 import android.view.Menu
+import android.view.View
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.cyph3r.app.notekeeper.database.AppDatabase
 import com.cyph3r.app.notekeeper.database.Course
 import com.cyph3r.app.notekeeper.database.CourseDao
+import com.cyph3r.app.notekeeper.database.NoteDao
+import com.cyph3r.app.notekeeper.databinding.AddEditNoteDialogBinding
 import com.cyph3r.app.notekeeper.databinding.DrawerBinding
 import com.cyph3r.app.notekeeper.ui.CourseRecyclerAdapter
 import com.cyph3r.app.notekeeper.ui.NoteRecyclerAdapter
@@ -23,7 +32,8 @@ import com.google.android.material.navigation.NavigationView.OnNavigationItemSel
 import com.google.android.material.snackbar.Snackbar
 
 
-class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener, ActivityResultCallback<Any> {
+class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener,
+    ActivityResultCallback<Any> {
     private var _drawerBinding: DrawerBinding? = null
     private val drawerBinding: DrawerBinding get() = _drawerBinding!!
     private val viewModel: ListNoteActivityViewModel by viewModels()
@@ -36,17 +46,19 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener, 
     }
     private val noteLayout by lazy { LinearLayoutManager(this) }
     private val courseLayout by lazy { LinearLayoutManager(this) }
-    private lateinit var database:AppDatabase
-//    private val noteDao = database.noteDao()
-    private lateinit var courseDao :  CourseDao
+    private lateinit var database: AppDatabase
+
+    private lateinit var noteDao: NoteDao
+    private lateinit var courseDao: CourseDao
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _drawerBinding = DrawerBinding.inflate(layoutInflater)
-        val database = Room.databaseBuilder(this, AppDatabase::class.java, "database.db")
+        database = Room.databaseBuilder(this, AppDatabase::class.java, "database.db")
             .allowMainThreadQueries().build()
         courseDao = database.courseDao()
+        noteDao = database.noteDao()
         setContentView(drawerBinding.root)
         setSupportActionBar(drawerBinding.activityListNoteRoot.toolbarNotesList)
         Log.d(logTag, "$logTag has been created")
@@ -54,11 +66,7 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener, 
             viewModel.restoreState(savedInstanceState)
         }
         viewModel.isStarted = false
-        drawerBinding.activityListNoteRoot.addNoteButton.setOnClickListener {
-            val activityIntent = Intent(this, EditNoteActivity::class.java)
-            activityIntent.putExtra(NOTE_ID, EXTRA_NO_NOTE_ID)
-            startActivity(activityIntent)
-        }
+        drawerBinding.activityListNoteRoot.addNoteButton.setOnClickListener(::onAddClick)
         handleItemSelection(viewModel.navDrawerSelection)
         val toggle = ActionBarDrawerToggle(
             this,
@@ -73,7 +81,7 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener, 
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.list_note_menu, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -91,22 +99,87 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener, 
         drawerBinding.activityListNoteRoot.noteCourseList.adapter!!.notifyItemRemoved(start)
         drawerBinding.activityListNoteRoot.noteCourseList.adapter!!.notifyItemRangeChanged(
             start,
-            drawerBinding.activityListNoteRoot.noteCourseList.adapter!!.itemCount
+            noteDao.getSize()
         )
-        ReminderNotification.notify(this, "Hello", "Kitty", 0)
+        ReminderNotification.notify(
+            this,
+            "Note Deleted",
+            "Note at position $start has been deleted",
+            0
+        )//todo: change this later
     }
 
     private fun displayNotes() {
         drawerBinding.activityListNoteRoot.noteCourseList.layoutManager = noteLayout
         drawerBinding.activityListNoteRoot.noteCourseList.adapter = noteRecyclerAdapter
         drawerBinding.navView.menu.findItem(R.id.nav_notes).isChecked = true
+        drawerBinding.activityListNoteRoot.addNoteButton.setImageResource(R.drawable.ic_note_add_black_24dp)
+        val itemTouchHelper = ItemTouchHelper(object :
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ) = false
+
+            override fun isItemViewSwipeEnabled() = viewModel.navDrawerSelection == R.id.nav_notes
+
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                noteDao.deleteNoteById((viewHolder as NoteRecyclerAdapter.ViewHolder).noteId)
+                deleteNote(viewHolder.adapterPosition)
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(drawerBinding.activityListNoteRoot.noteCourseList)
+
+
     }
 
     private fun displayCourses() {
         drawerBinding.activityListNoteRoot.noteCourseList.layoutManager = courseLayout
         drawerBinding.activityListNoteRoot.noteCourseList.adapter = courseRecyclerAdapter
         drawerBinding.navView.menu.findItem(R.id.nav_courses).isChecked = true
+        drawerBinding.activityListNoteRoot.addNoteButton.setImageResource(R.drawable.ic_add_note_black_24dp)
     }
+
+    private fun onAddClick(view: View) {
+        if (viewModel.navDrawerSelection != R.id.nav_courses) {
+            if (courseDao.getAllCourses().isEmpty())
+                showMessage("You don't have any course. Please create one to add new note")
+            else {
+                val activityIntent = Intent(this, EditNoteActivity::class.java)
+                activityIntent.putExtra(NOTE_ID, EXTRA_NO_NOTE_ID)
+                startActivity(activityIntent)
+            }
+        } else {
+            addCourse()
+        }
+    }
+
+    private fun addCourse() {
+        val addEditNoteDialogBinding = AddEditNoteDialogBinding.inflate(layoutInflater)
+        val dialogTitle = addEditNoteDialogBinding.editCourseDialogTitle
+        val dialogCourseId = addEditNoteDialogBinding.editCourseDialogCourseId
+        val dialogCourseName = addEditNoteDialogBinding.editCourseDialogName
+        val builder = AlertDialog.Builder(this)
+        builder.setView(addEditNoteDialogBinding.root)
+            .setPositiveButton("Save") { _, _ ->
+                courseDao.addCourse(
+                    Course(
+                        dialogCourseId.text.toString(),
+                        dialogCourseName.text.toString()
+                    )
+                )
+                drawerBinding.activityListNoteRoot.noteCourseList.adapter?.notifyDataSetChanged()
+                showMessage("Course Added")
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+        builder.create().show()
+    }
+
 
     private fun handleItemSelection(itemId: Int) {
         when (itemId) {
@@ -124,6 +197,7 @@ class NoteListActivity : AppCompatActivity(), OnNavigationItemSelectedListener, 
         drawerBinding.activityListNoteRoot.noteCourseList.layoutManager = noteLayout
         drawerBinding.activityListNoteRoot.noteCourseList.adapter =
             NotesUnderCourseAdapter(this, course)
+        drawerBinding.activityListNoteRoot.addNoteButton.setImageResource(R.drawable.ic_note_add_black_24dp)
     }
 
     override fun onBackPressed() {

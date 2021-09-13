@@ -5,7 +5,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
-import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
@@ -38,7 +37,7 @@ class EditNoteActivity : AppCompatActivity() {
         activityEditNoteBinding.spinnerCourses.adapter = adapterCourses
 
 
-        noteId = savedInstanceState?.getLong(NOTE_ID) ?: intent.getLongExtra(
+        noteId = savedInstanceState?.getInt(NOTE_ID) ?: intent.getIntExtra(
             NOTE_ID,
             EXTRA_NO_NOTE_ID
         )
@@ -49,11 +48,10 @@ class EditNoteActivity : AppCompatActivity() {
                 NoteInsertEntry(
                     "",
                     "",
-//                    (activityEditNoteBinding.spinnerCourses.selectedItem as Course).courseId,
-                    (activityEditNoteBinding.spinnerCourses.adapter.getItem(0) as Course).courseId,
+                    (activityEditNoteBinding.spinnerCourses.adapter.getItem(0) as Course).courseID,
                     System.currentTimeMillis()
                 )
-            )
+            ).toInt()
         }
         this.showMessage(noteId.toString())
         Log.d(logTag, "$logTag has been created")
@@ -76,17 +74,17 @@ class EditNoteActivity : AppCompatActivity() {
         val noteText = activityEditNoteBinding.fieldNoteText.text.toString().trim()
         val noteCourse = activityEditNoteBinding.spinnerCourses.selectedItem as Course
 //        val dateCreated = System.currentTimeMillis()
-        noteDao.updateNote(NoteUpdateEntry(noteId, noteTitle, noteText, noteCourse.courseId))
+        noteDao.updateNote(NoteUpdateEntry(noteId, noteTitle, noteText, noteCourse.courseID))
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putLong(NOTE_ID, noteId)
+        outState.putInt(NOTE_ID, noteId)
         saveNote()
     }
 
     private fun displayNote() {
-        val selectedNote = noteDao.getNoteById(noteId.toInt()).first()
+        val selectedNote = noteDao.getNoteById(noteId).first()
         val noteCourse = courseDao.findCourseById(selectedNote.noteCourseId)
         activityEditNoteBinding.fieldNoteTitle.setText(selectedNote.noteTitle)
         activityEditNoteBinding.fieldNoteText.setText(selectedNote.noteText)

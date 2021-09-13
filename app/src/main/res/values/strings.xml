@@ -36,6 +36,10 @@
     <string name="close_drawer" translatable="false">Closing Drawer</string>
     <string name="item_course_title" translatable="false">Course Name</string>
     <string name="note_date">Date Created</string>
+    <string name="menu_search">Search</string>
+    <string name="edit_course_dialog_title">Edit Course</string>
+    <string name="dialog_edit_course_id_hint">Course Id</string>
+    <string name="dialog_edit_course_name">Course Name</string>
 
 
 </resources>

@@ -17,23 +17,26 @@ data class Note(
 
 data class NoteInsertEntry(
     val noteTitle: String,
-     val noteText: String,
-     val noteCourseId: String,
-     val dateCreated: Long
+    val noteText: String,
+    val noteCourseId: String,
+    val dateCreated: Long
 )
+
 data class NoteUpdateEntry(
-    val NoteId: Long,
+    val NoteId: Int,
     val noteTitle: String,
     val noteText: String,
     val noteCourseId: String//todo:update dateCreated too if note contents are changed
 )
 
-
 @Entity(tableName = "courses")
 data class Course(
-    @PrimaryKey val courseId: String,
+    @PrimaryKey
+    @ColumnInfo val courseID: String,
     @ColumnInfo val courseName: String
-)
+) {
+    override fun toString() = "$courseID: $courseName"
+}
 
 
 
