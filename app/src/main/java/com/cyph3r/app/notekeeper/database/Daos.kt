@@ -29,6 +29,12 @@ interface NoteDao {
 
     @Query(" SELECT COUNT(*) FROM notes")
     fun getSize(): Int
+
+    @Query("SELECT * FROM notes WHERE noteTitle LIKE :keyword")
+    fun searchNoteByTitle(keyword: String):List<Note>
+
+    @Query("SELECT * FROM notes WHERE noteText LIKE :keyword")
+    fun searchNoteByText(keyword: String):List<Note>
 }
 
 @Dao

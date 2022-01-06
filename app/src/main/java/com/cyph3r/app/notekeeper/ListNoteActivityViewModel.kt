@@ -14,8 +14,7 @@ import androidx.lifecycle.ViewModel
 //
 //
 //
-class ListNoteActivityViewModel : ViewModel(),
-    LifecycleObserver {
+class ListNoteActivityViewModel : ViewModel(){
 
     var isStarted: Boolean = true
     val navDrawerSelectionName = "${this::class.java.simpleName}.navDrawerSelection"
@@ -24,10 +23,5 @@ class ListNoteActivityViewModel : ViewModel(),
     fun restoreState(bundle: Bundle) {
         navDrawerSelection = bundle.getInt(navDrawerSelectionName)
     }
-
-//    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-//    fun onOpen() {
-//
-//    }
 
 }

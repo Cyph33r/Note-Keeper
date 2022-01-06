@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
 import com.cyph3r.app.notekeeper.database.*
 import com.cyph3r.app.notekeeper.databinding.ActivityEditNoteBinding
+import com.google.firebase.firestore.FirebaseFirestore
 
 
 class EditNoteActivity : AppCompatActivity() {
@@ -24,6 +25,7 @@ class EditNoteActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         activityEditNoteBinding = ActivityEditNoteBinding.inflate(layoutInflater)
         setContentView(activityEditNoteBinding.root)
+        val db = FirebaseFirestore.getInstance()
         database = Room.databaseBuilder(this, AppDatabase::class.java, "database.db")
             .allowMainThreadQueries().build()
         noteDao = database.noteDao()
@@ -107,15 +109,19 @@ class EditNoteActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.edit_note_menu, menu)
         var menuItem: MenuItem?
-        if (noteId >= noteDao.getSize() || noteId < 0) {
+        if (noteDao.getAllNotes()
+                .indexOf(noteDao.getNoteById(noteId)[0]) >= noteDao.getSize() - 1 || (noteId < 0)
+        ) {
             menuItem = menu?.findItem(R.id.action_next)
             menuItem?.isVisible = false
             menuItem?.isEnabled = false
 //            menuItem?.setIcon(R.drawable.ic_arrow_forward_grey_24dp)
         }
-        if (noteId <= 1) {
+        if (noteDao.getAllNotes()
+                .indexOf(noteDao.getNoteById(noteId)[0]) <= 0
+        ) {
             menuItem = menu?.findItem(R.id.action_back)
             menuItem?.isVisible = false
             menuItem?.isEnabled = false
@@ -131,7 +137,7 @@ class EditNoteActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_settings_edit_note -> true
             R.id.action_next -> {
                 saveNote()
                 ++noteId
